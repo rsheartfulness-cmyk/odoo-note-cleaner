@@ -1,3 +1,4 @@
+[README.md](https://github.com/user-attachments/files/28179687/README.md)
 # Odoo Note Cleaner
 
 AI-powered tool to clean and structure Odoo CRM notes exported as CSV.
