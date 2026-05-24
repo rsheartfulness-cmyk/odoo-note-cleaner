@@ -7,14 +7,14 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#111827;min-height:100vh}
-header{background:linear-gradient(135deg,#1e293b,#0f172a);color:white;padding:0 32px;height:64px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,0.2)}
+header{background:linear-gradient(135deg,#1e293b,#0f172a);color:white;padding:0 32px;height:64px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.2)}
 .logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#3b82f6,#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px}
 .logo-text{font-size:18px;font-weight:700}
 .logo-sub{font-size:12px;color:#64748b;margin-top:2px}
 .header-right{margin-left:auto;display:flex;gap:10px;align-items:center}
 .pill{font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px}
 .pill-green{background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.3)}
-.pill-gray{background:rgba(255,255,255,.07);color:#94a3b8;font-size:11px}
+.pill-gray{background:rgba(255,255,255,.07);color:#94a3b8}
 .container{max-width:1200px;margin:28px auto;padding:0 20px}
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
 .step{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start}
@@ -43,8 +43,8 @@ header{background:linear-gradient(135deg,#1e293b,#0f172a);color:white;padding:0 
 .col-item.selected{border-color:#3b82f6;background:#eff6ff}
 .col-item input{width:15px;height:15px;accent-color:#3b82f6;flex-shrink:0;margin-top:2px;cursor:pointer}
 .col-name{font-size:13px;color:#374151;font-weight:600;word-break:break-word}
-.col-sample{font-size:11px;color:#9ca3af;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
-.col-actions{display:flex;gap:8px;margin-top:12px}
+.col-sample{font-size:11px;color:#9ca3af;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+.col-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .progress{display:none;margin-top:16px}
 .prog-wrap{background:#e2e8f0;border-radius:100px;height:10px;overflow:hidden;margin-bottom:6px}
 .prog-bar{background:linear-gradient(90deg,#3b82f6,#6366f1);height:100%;border-radius:100px;transition:width .3s;width:0%}
@@ -79,8 +79,8 @@ header{background:linear-gradient(135deg,#1e293b,#0f172a);color:white;padding:0 
 table{width:100%;border-collapse:collapse;font-size:12px}
 thead tr{background:#f8fafc;position:sticky;top:0;z-index:1}
 th{padding:11px 14px;text-align:left;font-weight:600;color:#374151;border-bottom:1.5px solid #e2e8f0;white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
-th.cleaned{background:#eff6ff;color:#2563eb}
-td{padding:10px 14px;border-bottom:1px solid #f1f5f9;vertical-align:top;max-width:220px;word-break:break-word;line-height:1.5}
+th.cleaned-h{background:#eff6ff;color:#2563eb}
+td{padding:10px 14px;border-bottom:1px solid #f1f5f9;vertical-align:top;max-width:220px;word-break:break-word;line-height:1.5;font-size:12px}
 td.cleaned-cell{background:#f8faff}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fafbff}
@@ -89,18 +89,30 @@ td.num{color:#9ca3af;font-size:11px;font-weight:500;text-align:center;width:40px
 .alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;display:flex}
 .alert-success{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;display:flex}
 .badge-cleaned{background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:1px 7px;border-radius:100px;margin-left:5px;vertical-align:middle}
-.offline-notice{background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center}
+.loading-box{background:white;border-radius:16px;padding:32px 40px;text-align:center;min-width:280px}
+.loading-spinner{width:40px;height:40px;border:4px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
 footer{text-align:center;padding:24px;font-size:12px;color:#9ca3af}
 @media(max-width:768px){.steps,.stats{grid-template-columns:1fr 1fr}.container{padding:0 12px}}
 @media(max-width:480px){.steps,.stats{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div id="loadingText" style="font-size:14px;font-weight:600;color:#374151">Reading file…</div>
+    <div id="loadingSub" style="font-size:12px;color:#9ca3af;margin-top:4px">Please wait</div>
+  </div>
+</div>
+
 <header>
   <div class="logo-icon">🧹</div>
   <div>
     <div class="logo-text">Odoo Note Cleaner</div>
-    <div class="logo-sub">Multi-column cleaner · Hindi + English</div>
+    <div class="logo-sub">Multi-column · All rows · Hindi + English</div>
   </div>
   <div class="header-right">
     <span class="pill pill-green">✦ 100% FREE</span>
@@ -109,20 +121,10 @@ footer{text-align:center;padding:24px;font-size:12px;color:#9ca3af}
 </header>
 
 <div class="container">
-
   <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body"><strong>Export from Odoo</strong><span>Action → Export → Download as CSV or XLSX</span></div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body"><strong>Pick Columns to Clean</strong><span>Tick only the columns you want fixed — rest stay untouched</span></div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body"><strong>Download Clean File</strong><span>Same columns, same order, same format — no mismatch</span></div>
-    </div>
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Export from Odoo</strong><span>Action → Export → Download as CSV or XLSX — any format</span></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Pick Columns to Clean</strong><span>Tick any columns you want cleaned — rest stay untouched</span></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Download Clean File</strong><span>Same columns, same order, ALL rows — no mismatch ever</span></div></div>
   </div>
 
   <div id="alertBox" class="alert"></div>
@@ -132,29 +134,25 @@ footer{text-align:center;padding:24px;font-size:12px;color:#9ca3af}
       <div class="card-ico">📂</div>
       <div>
         <div class="card-title">Upload Your Odoo File</div>
-        <div class="card-sub">CSV, XLSX, XLS — works online and offline</div>
+        <div class="card-sub">CSV · XLSX · XLS · ODS — works online and offline — any number of rows/columns</div>
       </div>
     </div>
-
     <div class="upload-box" id="uploadBox" onclick="document.getElementById('fileInput').click()">
       <span class="upload-ico">☁️</span>
       <div class="upload-title">Click to upload or drag & drop</div>
-      <div class="upload-sub">CSV · XLSX · XLS · ODS &nbsp;|&nbsp; Hindi & English both supported</div>
+      <div class="upload-sub">CSV · XLSX · XLS · ODS &nbsp;|&nbsp; Hindi & English mixed notes supported</div>
     </div>
     <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.ods,.txt"/>
-
-    <div class="file-info" id="fileInfo">
-      <span>✅</span><span id="fileInfoText"></span>
-    </div>
+    <div class="file-info" id="fileInfo"><span>✅</span><span id="fileInfoText"></span></div>
 
     <div class="col-picker" id="colPicker">
       <div class="col-picker-title">📋 Select columns to clean</div>
-      <div class="col-picker-sub">Tick the columns whose content should be cleaned. All other columns will remain exactly the same — same position, same data.</div>
+      <div class="col-picker-sub">Tick any columns. All other columns stay exactly the same — same position, same data, all rows.</div>
       <div class="col-grid" id="colGrid"></div>
       <div class="col-actions">
         <button class="btn btn-sm" onclick="selectAll()">✅ Select All</button>
         <button class="btn btn-sm" onclick="clearAll()">❌ Clear All</button>
-        <button class="btn btn-sm" onclick="autoSelect()">🤖 Auto Select Notes</button>
+        <button class="btn btn-sm" onclick="autoSelect()">🤖 Auto Notes</button>
       </div>
     </div>
 
@@ -164,10 +162,8 @@ footer{text-align:center;padding:24px;font-size:12px;color:#9ca3af}
     </div>
 
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-      <button class="btn btn-primary" id="processBtn" onclick="processFile()" disabled>
-        ✨ Clean Selected Columns
-      </button>
-      <span style="font-size:12px;color:#9ca3af">🔒 All processing in your browser — zero data sent anywhere</span>
+      <button class="btn btn-primary" id="processBtn" onclick="processFile()" disabled>✨ Clean Selected Columns</button>
+      <span style="font-size:12px;color:#9ca3af">🔒 Runs in your browser — no data sent anywhere</span>
     </div>
   </div>
 
@@ -188,765 +184,601 @@ footer{text-align:center;padding:24px;font-size:12px;color:#9ca3af}
       <div class="table-wrap">
         <table id="mainTable">
           <thead><tr id="theadRow"></tr></thead>
-          <tbody id="tableBody">
-            <tr><td colspan="2" style="text-align:center;padding:40px;color:#9ca3af">Upload a file to get started</td></tr>
-          </tbody>
+          <tbody id="tableBody"><tr><td colspan="2" style="text-align:center;padding:40px;color:#9ca3af">Upload a file to begin</td></tr></tbody>
         </table>
       </div>
     </div>
   </div>
 </div>
-
-<footer>Odoo Note Cleaner · 100% free · No API needed · Works offline · No data sent anywhere</footer>
+<footer>Odoo Note Cleaner · 100% free · No API · Works offline · All rows & columns supported</footer>
 
 <script>
-// ══════════════════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════════════════
-let rawRows = [], cleanedRows = [], allCols = [], selectedCols = [];
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let rawRows=[], cleanedRows=[], allCols=[], selectedCols=[];
 
-// ══════════════════════════════════════════════════════
-//  DRAG & DROP
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════
+// DRAG & DROP
+// ══════════════════════════════════════════
 const box = document.getElementById('uploadBox');
-box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('drag'); });
-box.addEventListener('dragleave', () => box.classList.remove('drag'));
-box.addEventListener('drop', e => { e.preventDefault(); box.classList.remove('drag'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
-document.getElementById('fileInput').addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
+box.addEventListener('dragover', e=>{e.preventDefault();box.classList.add('drag');});
+box.addEventListener('dragleave', ()=>box.classList.remove('drag'));
+box.addEventListener('drop', e=>{e.preventDefault();box.classList.remove('drag');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+document.getElementById('fileInput').addEventListener('change', e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
 
-// ══════════════════════════════════════════════════════
-//  FILE HANDLER — auto detect CSV vs XLSX
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════
+// HANDLE FILE
+// ══════════════════════════════════════════
 function handleFile(file) {
   const ext = file.name.split('.').pop().toLowerCase();
-  if (ext === 'xlsx' || ext === 'xls' || ext === 'ods') {
-    readXLSX(file);
-  } else {
-    readCSV(file);
-  }
+  if (['xlsx','xls','ods'].includes(ext)) readXLSX(file);
+  else readCSV(file);
 }
 
-// ── READ CSV (with auto encoding detection) ──
+// ══════════════════════════════════════════
+// READ CSV — auto encoding detection
+// ══════════════════════════════════════════
 function readCSV(file) {
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const bytes = new Uint8Array(e.target.result);
-    const enc = detectEncoding(bytes);
-    let text = new TextDecoder(enc).decode(bytes).replace(/^\uFEFF/, '');
-    // If garbled, retry windows-1252
-    if ((text.match(/\uFFFD/g)||[]).length > 3) {
-      try { text = new TextDecoder('windows-1252').decode(bytes); } catch(x){}
-    }
-    const result = parseCSV(text);
-    onDataLoaded(result.rows, result.cols, file.name, enc);
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-// ── READ XLSX (pure JS — no library needed) ──
-function readXLSX(file) {
+  showLoading('Reading CSV file…', 'Detecting encoding…');
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const data = parseXLSX(e.target.result);
-      onDataLoaded(data.rows, data.cols, file.name, 'xlsx');
+      const bytes = new Uint8Array(e.target.result);
+      const enc = detectEncoding(bytes);
+      let text = new TextDecoder(enc).decode(bytes).replace(/^\uFEFF/,'');
+      if ((text.match(/\uFFFD/g)||[]).length > 3) {
+        try { text = new TextDecoder('windows-1252').decode(bytes); } catch(x){}
+      }
+      const result = parseCSV(text);
+      hideLoading();
+      onDataLoaded(result.rows, result.cols, file.name, enc);
     } catch(err) {
-      showAlert('Could not read XLSX file: ' + err.message + '. Please save as CSV from Excel and try again.', 'error');
+      hideLoading();
+      showAlert('CSV read error: '+err.message, 'error');
     }
   };
   reader.readAsArrayBuffer(file);
 }
 
-// ── ENCODING DETECTION ──
-function detectEncoding(bytes) {
-  if (bytes[0]===0xEF && bytes[1]===0xBB && bytes[2]===0xBF) return 'utf-8';
-  if (bytes[0]===0xFF && bytes[1]===0xFE) return 'utf-16le';
-  if (bytes[0]===0xFE && bytes[1]===0xFF) return 'utf-16be';
-  let bad = 0, i = 0;
-  while (i < Math.min(bytes.length, 8000)) {
-    const b = bytes[i];
-    if (b < 0x80) { i++; continue; }
-    if (b >= 0xC2 && b <= 0xDF && i+1 < bytes.length && (bytes[i+1]&0xC0)===0x80) { i+=2; continue; }
-    if (b >= 0xE0 && b <= 0xEF && i+2 < bytes.length && (bytes[i+1]&0xC0)===0x80 && (bytes[i+2]&0xC0)===0x80) { i+=3; continue; }
-    if (b >= 0xF0 && b <= 0xF4 && i+3 < bytes.length && (bytes[i+1]&0xC0)===0x80 && (bytes[i+2]&0xC0)===0x80 && (bytes[i+3]&0xC0)===0x80) { i+=4; continue; }
-    bad++; i++;
+// ══════════════════════════════════════════
+// READ XLSX — native DecompressionStream
+// ══════════════════════════════════════════
+async function readXLSX(file) {
+  showLoading('Reading XLSX file…', 'Decompressing data…');
+  try {
+    const buf = await file.arrayBuffer();
+    const data = await parseXLSX(buf);
+    hideLoading();
+    onDataLoaded(data.rows, data.cols, file.name, 'xlsx');
+  } catch(err) {
+    hideLoading();
+    console.error('XLSX error:', err);
+    showAlert('XLSX error: '+err.message+'. Try exporting as CSV from Odoo instead.', 'error');
   }
-  return bad > 5 ? 'windows-1252' : 'utf-8';
 }
 
-// ── BUILT-IN CSV PARSER (no PapaParse needed) ──
-function parseCSV(text) {
-  const lines = [];
-  let cur = '', inQ = false, row = [];
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i], nx = text[i+1];
-    if (ch === '"') {
-      if (inQ && nx === '"') { cur += '"'; i++; }
-      else inQ = !inQ;
-    } else if (ch === ',' && !inQ) {
-      row.push(cur); cur = '';
-    } else if ((ch === '\n' || ch === '\r') && !inQ) {
-      if (ch === '\r' && nx === '\n') i++;
-      row.push(cur); cur = '';
-      lines.push(row); row = [];
-    } else {
-      cur += ch;
-    }
+// ══════════════════════════════════════════
+// ENCODING DETECTION
+// ══════════════════════════════════════════
+function detectEncoding(bytes) {
+  if (bytes[0]===0xEF&&bytes[1]===0xBB&&bytes[2]===0xBF) return 'utf-8';
+  if (bytes[0]===0xFF&&bytes[1]===0xFE) return 'utf-16le';
+  if (bytes[0]===0xFE&&bytes[1]===0xFF) return 'utf-16be';
+  let bad=0,i=0;
+  while(i<Math.min(bytes.length,8000)){
+    const b=bytes[i];
+    if(b<0x80){i++;continue;}
+    if(b>=0xC2&&b<=0xDF&&i+1<bytes.length&&(bytes[i+1]&0xC0)===0x80){i+=2;continue;}
+    if(b>=0xE0&&b<=0xEF&&i+2<bytes.length&&(bytes[i+1]&0xC0)===0x80&&(bytes[i+2]&0xC0)===0x80){i+=3;continue;}
+    if(b>=0xF0&&b<=0xF4&&i+3<bytes.length&&(bytes[i+1]&0xC0)===0x80&&(bytes[i+2]&0xC0)===0x80&&(bytes[i+3]&0xC0)===0x80){i+=4;continue;}
+    bad++;i++;
   }
-  if (cur || row.length) { row.push(cur); lines.push(row); }
-  // Remove empty trailing lines
-  while (lines.length && lines[lines.length-1].every(c=>!c.trim())) lines.pop();
-  if (!lines.length) return {rows:[], cols:[]};
-  const cols = lines[0].map(c => c.trim());
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i].every(c=>!c.trim())) continue;
-    const obj = {};
-    cols.forEach((c, j) => { obj[c] = lines[i][j] !== undefined ? lines[i][j] : ''; });
+  return bad>5?'windows-1252':'utf-8';
+}
+
+// ══════════════════════════════════════════
+// CSV PARSER — pure JS, no dependencies
+// ══════════════════════════════════════════
+function parseCSV(text) {
+  const lines=[]; let cur='',inQ=false,row=[];
+  for(let i=0;i<text.length;i++){
+    const ch=text[i],nx=text[i+1];
+    if(ch==='"'){if(inQ&&nx==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(ch===','&&!inQ){row.push(cur);cur='';}
+    else if((ch==='\n'||ch==='\r')&&!inQ){if(ch==='\r'&&nx==='\n')i++;row.push(cur);cur='';lines.push(row);row=[];}
+    else cur+=ch;
+  }
+  if(cur||row.length){row.push(cur);lines.push(row);}
+  while(lines.length&&lines[lines.length-1].every(c=>!c.trim()))lines.pop();
+  if(!lines.length)return{rows:[],cols:[]};
+  const cols=lines[0].map(c=>c.trim());
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    if(lines[i].every(c=>!c.trim()))continue;
+    const obj={};
+    cols.forEach((c,j)=>{obj[c]=lines[i][j]!==undefined?lines[i][j]:'';});
     rows.push(obj);
   }
-  return {rows, cols};
+  return{rows,cols};
 }
 
-// ── BUILT-IN XLSX PARSER (ZIP-based, pure JS) ──
-function parseXLSX(arrayBuffer) {
-  // XLSX is a ZIP file. We extract the shared strings and first sheet XML.
-  const bytes = new Uint8Array(arrayBuffer);
+// ══════════════════════════════════════════
+// XLSX PARSER — RELIABLE VERSION
+// Uses native browser DecompressionStream (Blob→Response method)
+// Works for ANY size file, ALL rows, ALL columns
+// ══════════════════════════════════════════
+async function parseXLSX(arrayBuffer) {
+  const fileBytes = new Uint8Array(arrayBuffer);
 
-  // Simple ZIP reader
-  function readZip(bytes) {
-    const files = {};
-    let i = 0;
-    while (i < bytes.length - 4) {
-      // Local file header signature
-      if (bytes[i]===0x50 && bytes[i+1]===0x4B && bytes[i+2]===0x03 && bytes[i+3]===0x04) {
-        const comp = bytes[i+8] | (bytes[i+9]<<8);
-        const compSize = bytes[i+18] | (bytes[i+19]<<8) | (bytes[i+20]<<16) | (bytes[i+21]<<24);
-        const uncompSize = bytes[i+22] | (bytes[i+23]<<8) | (bytes[i+24]<<16) | (bytes[i+25]<<24);
-        const fnLen = bytes[i+26] | (bytes[i+27]<<8);
-        const extraLen = bytes[i+28] | (bytes[i+29]<<8);
-        const fnBytes = bytes.slice(i+30, i+30+fnLen);
-        const fname = new TextDecoder('utf-8').decode(fnBytes);
-        const dataStart = i+30+fnLen+extraLen;
-        let data;
-        if (comp === 0) {
-          data = bytes.slice(dataStart, dataStart+uncompSize);
-        } else if (comp === 8) {
-          data = inflate(bytes.slice(dataStart, dataStart+compSize));
-        }
-        if (data) files[fname] = new TextDecoder('utf-8').decode(data);
-        i = dataStart + compSize;
+  // ── INFLATE: use Blob+Response+DecompressionStream (most reliable browser method) ──
+  async function inflate(compressedBytes) {
+    // Primary: Blob stream method (works in Chrome, Edge, Firefox, Safari)
+    try {
+      const blob = new Blob([compressedBytes]);
+      const ds = new DecompressionStream('deflate-raw');
+      const decomp = blob.stream().pipeThrough(ds);
+      const result = await new Response(decomp).arrayBuffer();
+      return new Uint8Array(result);
+    } catch(e1) {
+      // Secondary: Writer/Reader method
+      try {
+        const ds = new DecompressionStream('deflate-raw');
+        const writer = ds.writable.getWriter();
+        const reader = ds.readable.getReader();
+        writer.write(compressedBytes);
+        writer.close();
+        const chunks=[];
+        while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);}
+        const total=chunks.reduce((n,c)=>n+c.length,0);
+        const out=new Uint8Array(total);let pos=0;
+        for(const c of chunks){out.set(c,pos);pos+=c.length;}
+        return out;
+      } catch(e2) {
+        throw new Error('Decompression failed. Try saving as CSV from Excel: '+e2.message);
+      }
+    }
+  }
+
+  // ── READ ZIP — extract all entries ──
+  async function readZip(bytes) {
+    const files={};
+    let i=0;
+    while(i < bytes.length-4) {
+      // Local file header signature: PK\x03\x04
+      if(bytes[i]===0x50&&bytes[i+1]===0x4B&&bytes[i+2]===0x03&&bytes[i+3]===0x04) {
+        const comp  = bytes[i+8] |(bytes[i+9]<<8);
+        const csz   = bytes[i+18]|(bytes[i+19]<<8)|(bytes[i+20]<<16)|(bytes[i+21]<<24);
+        const usz   = bytes[i+22]|(bytes[i+23]<<8)|(bytes[i+24]<<16)|(bytes[i+25]<<24);
+        const fnLen = bytes[i+26]|(bytes[i+27]<<8);
+        const exLen = bytes[i+28]|(bytes[i+29]<<8);
+        const dStart= i+30+fnLen+exLen;
+        const fname = new TextDecoder().decode(bytes.slice(i+30,i+30+fnLen));
+        const raw   = bytes.slice(dStart, dStart+csz);
+        try {
+          const data = (comp===8) ? await inflate(raw) : raw.slice(0,usz);
+          files[fname] = new TextDecoder('utf-8').decode(data);
+        } catch(e) { console.warn('ZIP entry failed:',fname,e.message); }
+        i = dStart+csz;
       } else { i++; }
     }
     return files;
   }
 
-  // Tiny inflate (deflate decompressor)
-  function inflate(data) {
-    try {
-      // Use DecompressionStream if available (modern browsers)
-      // We need synchronous here, so use a workaround
-      const ds = new DecompressionStream('deflate-raw');
-      const writer = ds.writable.getWriter();
-      const reader = ds.readable.getReader();
-      writer.write(data);
-      writer.close();
-      const chunks = [];
-      function pump() {
-        return reader.read().then(({done,value}) => {
-          if (done) return;
-          chunks.push(value);
-          return pump();
-        });
+  // ── PARSE SHARED STRINGS — split-based, handles HTML content ──
+  function parseSharedStrings(xml) {
+    if(!xml) return [];
+    const result=[];
+    // Split on <si> — handles any size, any content including HTML
+    const parts = xml.split('<si>');
+    for(let p=1; p<parts.length; p++) {
+      const siBlock = parts[p].split('</si>')[0];
+      const texts=[];
+      let pos=0;
+      while(pos < siBlock.length) {
+        const to = siBlock.indexOf('<t', pos);
+        if(to===-1) break;
+        const tc = siBlock.indexOf('>', to);
+        if(tc===-1) break;
+        const te = siBlock.indexOf('</t>', tc);
+        if(te===-1) break;
+        // Raw text — may contain XML-encoded HTML entities
+        const raw = siBlock.slice(tc+1, te);
+        texts.push(decodeXml(raw));
+        pos = te+4;
       }
-      // synchronous not possible with streams — throw to fallback
-      throw new Error('use fallback');
-    } catch(e) {
-      // Fallback: use a minimal pure-JS inflate
-      return pureInflate(data);
+      result.push(texts.join(''));
     }
+    return result;
   }
 
-  // Pure JS inflate for XLSX (handles stored + deflated blocks)
-  function pureInflate(src) {
-    // We implement a minimal DEFLATE decompressor
-    let si = 0;
-    const out = [];
-    function readBit() { const b=(src[si>>3]>>(si&7))&1; si++; return b; }
-    function readBits(n) { let v=0; for(let i=0;i<n;i++) v|=(readBit()<<i); return v; }
-    function readByte() { si=((si+7)&~7); const b=src[si>>3]; si+=8; return b; }
+  // ── XML entity decode ──
+  function decodeXml(s) {
+    return s
+      .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+      .replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#39;/g,"'")
+      .replace(/&#x([0-9a-fA-F]+);/g,(_,h)=>String.fromCharCode(parseInt(h,16)))
+      .replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(+n));
+  }
 
-    const lenBase=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
-    const lenExtra=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
-    const distBase=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
-    const distExtra=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
-
-    function buildHuffman(lens) {
-      const maxLen = Math.max(...lens);
-      const bl = new Array(maxLen+1).fill(0);
-      lens.forEach(l => { if(l) bl[l]++; });
-      const nc = new Array(maxLen+2).fill(0);
-      for(let i=1;i<=maxLen;i++) nc[i+1]=(nc[i]+bl[i])<<1;
-      const map = {};
-      lens.forEach((l,sym) => { if(l) { map[(nc[l]++).toString(2).padStart(l,'0')]=sym; } });
-      return {map, maxLen};
-    }
-
-    function decodeHuff(huff) {
-      let code='';
-      for(let i=0;i<huff.maxLen;i++) {
-        code+=readBit().toString();
-        if(code in huff.map) return huff.map[code];
-      }
-      return -1;
-    }
-
-    let bfinal=0;
-    while(!bfinal) {
-      bfinal=readBit();
-      const btype=readBits(2);
-      if(btype===0) {
-        si=((si+7)&~7);
-        const len=readByte()|(readByte()<<8);
-        readByte(); readByte();
-        for(let i=0;i<len;i++) out.push(readByte());
-      } else if(btype===1||btype===2) {
-        let litHuff, distHuff;
-        if(btype===1) {
-          const ll=[]; for(let i=0;i<144;i++) ll.push(8); for(let i=144;i<256;i++) ll.push(9);
-          for(let i=256;i<280;i++) ll.push(7); for(let i=280;i<288;i++) ll.push(8);
-          const dl=[]; for(let i=0;i<32;i++) dl.push(5);
-          litHuff=buildHuffman(ll); distHuff=buildHuffman(dl);
-        } else {
-          const hlit=readBits(5)+257, hdist=readBits(5)+1, hclen=readBits(4)+4;
-          const clOrd=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
-          const cl=new Array(19).fill(0);
-          for(let i=0;i<hclen;i++) cl[clOrd[i]]=readBits(3);
-          const clHuff=buildHuffman(cl);
-          const lens=[]; let i=0;
-          while(i<hlit+hdist) {
-            const c=decodeHuff(clHuff);
-            if(c<16) { lens.push(c); i++; }
-            else if(c===16) { const r=readBits(2)+3; for(let j=0;j<r;j++) lens.push(lens[lens.length-1]); i+=r; }
-            else if(c===17) { const r=readBits(3)+3; for(let j=0;j<r;j++) lens.push(0); i+=r; }
-            else { const r=readBits(7)+11; for(let j=0;j<r;j++) lens.push(0); i+=r; }
-          }
-          litHuff=buildHuffman(lens.slice(0,hlit));
-          distHuff=buildHuffman(lens.slice(hlit));
+  // ── PARSE WORKSHEET — all rows, all columns ──
+  function parseSheet(xml, ss) {
+    const rows=[];
+    // Use split on <row to handle any size worksheet
+    const rowParts = xml.split('<row ');
+    for(let rp=1; rp<rowParts.length; rp++) {
+      const rowContent = rowParts[rp].split('</row>')[0];
+      const cells={};
+      // Split on <c to get cells
+      const cellParts = rowContent.split('<c ');
+      for(let cp=1; cp<cellParts.length; cp++) {
+        const cp_content = cellParts[cp];
+        // Cell reference
+        const refM = cp_content.match(/\br="([A-Z]+)(\d+)"/);
+        if(!refM) continue;
+        const colLet = refM[1];
+        // Cell type
+        const typeM = cp_content.match(/\bt="([^"]*)"/);
+        const t = typeM ? typeM[1] : '';
+        // Value
+        const vM  = cp_content.match(/<v>([\s\S]*?)<\/v>/);
+        const isM = cp_content.match(/<is>([\s\S]*?)<\/is>/);
+        let val='';
+        if(t==='s' && vM) {
+          // Shared string lookup
+          const idx = parseInt(vM[1]);
+          val = (idx>=0 && idx<ss.length) ? ss[idx] : '';
+        } else if(isM) {
+          // Inline string — strip inner tags, decode
+          val = decodeXml(isM[1].replace(/<[^>]+>/g,' ').trim());
+        } else if(t==='str' && vM) {
+          val = decodeXml(vM[1]);
+        } else if(vM) {
+          val = decodeXml(vM[1]);
         }
-        while(true) {
-          const sym=decodeHuff(litHuff);
-          if(sym===256) break;
-          if(sym<256) { out.push(sym); }
-          else {
-            const li=sym-257;
-            const len=lenBase[li]+readBits(lenExtra[li]);
-            const di=decodeHuff(distHuff);
-            const dist=distBase[di]+readBits(distExtra[di]);
-            const pos=out.length;
-            for(let i=0;i<len;i++) out.push(out[pos-dist+i]);
-          }
-        }
+        cells[colLet]=val;
       }
+      if(Object.keys(cells).length) rows.push(cells);
     }
-    return new Uint8Array(out);
+    return rows;
   }
 
-  // Parse XML helper
-  function getTagContent(xml, tag) {
-    const re = new RegExp('<'+tag+'[^>]*>([\\s\\S]*?)<\\/'+tag+'>', 'g');
-    const results = [];
-    let m;
-    while((m=re.exec(xml))!==null) results.push(m[1]);
-    return results;
+  // ── COLUMN LETTER HELPERS ──
+  function colLetter(n){let s='';n++;while(n>0){s=String.fromCharCode(65+((n-1)%26))+s;n=Math.floor((n-1)/26);}return s;}
+
+  // ── MAIN ──
+  const zip = await readZip(fileBytes);
+  console.log('ZIP files:', Object.keys(zip));
+
+  // Find worksheet
+  let sheetFile='xl/worksheets/sheet1.xml';
+  if(!zip[sheetFile]){
+    for(const k of Object.keys(zip)){if(/xl\/worksheets\/sheet/.test(k)){sheetFile=k;break;}}
   }
-  function getAttr(tag, attr) {
-    const m = tag.match(new RegExp(attr+'=["\']([^"\']*)["\']'));
-    return m ? m[1] : '';
-  }
-  function xmlDecode(s) {
-    return s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(n));
-  }
+  if(!zip[sheetFile]) throw new Error('No worksheet found in file');
 
-  const zip = readZip(bytes);
+  const ssXml = zip['xl/sharedStrings.xml']||'';
+  console.log('SharedStrings XML length:',ssXml.length);
+  const ss = parseSharedStrings(ssXml);
+  console.log('Shared strings parsed:',ss.length,'First HTML entry:', ss.find(s=>s.includes('<div'))||'none found');
 
-  // Get shared strings
-  const ssXml = zip['xl/sharedStrings.xml'] || '';
-  const sharedStrings = [];
-  const siRe = /<si>([\s\S]*?)<\/si>/g;
-  let sm;
-  while((sm=siRe.exec(ssXml))!==null) {
-    // Extract all <t> text within <si>
-    const texts = [];
-    const tRe = /<t[^>]*>([^<]*)<\/t>/g;
-    let tm;
-    while((tm=tRe.exec(sm[1]))!==null) texts.push(xmlDecode(tm[1]));
-    sharedStrings.push(texts.join(''));
-  }
+  const sheetXml = zip[sheetFile];
+  console.log('Sheet XML length:',sheetXml.length);
+  const sheetRows = parseSheet(sheetXml, ss);
+  console.log('Sheet rows:',sheetRows.length);
 
-  // Find first sheet
-  const wbXml = zip['xl/workbook.xml'] || '';
-  const sheetRe = /<sheet[^>]*r:id="([^"]*)"[^>]*\/>/;
-  const sheetMatch = wbXml.match(/<sheet[^>]*\/>/);
-  let sheetFile = 'xl/worksheets/sheet1.xml';
-  if (zip[sheetFile] === undefined) {
-    // find any sheet
-    for (const k of Object.keys(zip)) {
-      if (k.startsWith('xl/worksheets/sheet')) { sheetFile = k; break; }
-    }
-  }
+  if(!sheetRows.length) throw new Error('No data found in worksheet');
 
-  const shXml = zip[sheetFile] || '';
+  // Collect all column letters
+  const colLetSet=new Set();
+  sheetRows.forEach(r=>Object.keys(r).forEach(c=>colLetSet.add(c)));
+  const sortedLetters=[...colLetSet].sort((a,b)=>a.length!==b.length?a.length-b.length:a.localeCompare(b));
 
-  // Parse rows
-  const dataRows = [];
-  const rowRe = /<row[^>]*>([\s\S]*?)<\/row>/g;
-  let rowMatch;
-  while((rowMatch=rowRe.exec(shXml))!==null) {
-    const cells = {};
-    const cellRe = /<c r="([A-Z]+)(\d+)"([^>]*)>([\s\S]*?)<\/c>/g;
-    let cm;
-    while((cm=cellRe.exec(rowMatch[1]))!==null) {
-      const col = cm[1], attrs = cm[3], inner = cm[4];
-      const t = getAttr(attrs+' r="'+col+'"', 't') || (attrs.match(/t="([^"]*)"/) ? attrs.match(/t="([^"]*)"/)[1] : '');
-      const vMatch = inner.match(/<v>([^<]*)<\/v>/);
-      const isMatch = inner.match(/<is>([\s\S]*?)<\/is>/);
-      let val = '';
-      if (isMatch) {
-        const tms = []; const itre = /<t[^>]*>([^<]*)<\/t>/g; let itm;
-        while((itm=itre.exec(isMatch[1]))!==null) tms.push(xmlDecode(itm[1]));
-        val = tms.join('');
-      } else if (vMatch) {
-        const v = vMatch[1];
-        val = (t==='s') ? (sharedStrings[parseInt(v)] || '') : xmlDecode(v);
-      }
-      cells[col] = val;
-    }
-    dataRows.push(cells);
-  }
+  // Headers from row 0
+  const headerRow=sheetRows[0];
+  const colMap={};
+  sortedLetters.forEach(l=>{if(headerRow[l])colMap[l]=headerRow[l];});
+  const cols=sortedLetters.filter(l=>headerRow[l]).map(l=>headerRow[l]);
 
-  if (!dataRows.length) throw new Error('No data found in sheet');
-
-  // Convert col letters to indices
-  function colIdx(letters) {
-    let n=0;
-    for(const ch of letters) n=n*26+(ch.charCodeAt(0)-64);
-    return n-1;
-  }
-
-  // Find all unique columns and max col index
-  const allColLetters = new Set();
-  dataRows.forEach(r => Object.keys(r).forEach(c => allColLetters.add(c)));
-  const sortedCols = [...allColLetters].sort((a,b) => {
-    if(a.length!==b.length) return a.length-b.length;
-    return a.localeCompare(b);
-  });
-
-  // First row = headers
-  const headerRow = dataRows[0];
-  const headers = sortedCols.map(c => headerRow[c] || '');
-  const cols = headers.filter(Boolean);
-
-  // Map col letters to header names
-  const colMap = {};
-  sortedCols.forEach((letter, i) => { if(headers[i]) colMap[letter] = headers[i]; });
-
-  const rows = [];
-  for (let i = 1; i < dataRows.length; i++) {
-    const r = dataRows[i];
-    if (!Object.keys(r).length) continue;
-    const obj = {};
-    cols.forEach(h => { obj[h] = ''; });
-    Object.entries(r).forEach(([letter, val]) => {
-      if (colMap[letter]) obj[colMap[letter]] = val;
-    });
-    // Skip fully empty rows
-    if (Object.values(obj).every(v => !v)) continue;
+  // Build data rows (ALL rows, no limit)
+  const rows=[];
+  for(let i=1;i<sheetRows.length;i++){
+    const r=sheetRows[i];
+    if(!Object.keys(r).length) continue;
+    const obj={};
+    cols.forEach(h=>obj[h]='');
+    Object.entries(r).forEach(([letter,val])=>{if(colMap[letter])obj[colMap[letter]]=val;});
+    if(Object.values(obj).every(v=>!v)) continue;
     rows.push(obj);
   }
 
-  return {rows, cols};
+  console.log('Data rows built:',rows.length,'Cols:',cols);
+  if(rows.length>0) console.log('Sample row 0 Notes/description:', rows[0]['Notes']||rows[0]['description']||'(check col names)');
+
+  return{rows,cols};
 }
 
-// ══════════════════════════════════════════════════════
-//  ON DATA LOADED
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════
+// ON DATA LOADED
+// ══════════════════════════════════════════
 function onDataLoaded(rows, cols, filename, enc) {
-  rawRows = rows;
-  allCols = cols;
+  rawRows=rows; allCols=cols;
   buildColPicker();
   box.classList.add('done');
-  const fi = document.getElementById('fileInfo');
-  fi.style.display = 'flex';
-  document.getElementById('fileInfoText').textContent =
-    filename + ' — ' + rows.length + ' records, ' + cols.length + ' columns (encoding: ' + enc + ')';
-  document.getElementById('processBtn').disabled = false;
-  showAlert('✅ ' + rows.length + ' records loaded from ' + cols.length + ' columns. Tick the columns you want to clean, then click the button.', 'success');
+  const fi=document.getElementById('fileInfo');
+  fi.style.display='flex';
+  document.getElementById('fileInfoText').textContent=
+    filename+' — '+rows.length+' records, '+cols.length+' columns ('+enc+')';
+  document.getElementById('processBtn').disabled=false;
+  showAlert('✅ '+rows.length+' records loaded from '+cols.length+' columns. Select columns to clean.','success');
 }
 
-// ══════════════════════════════════════════════════════
-//  COLUMN PICKER
-// ══════════════════════════════════════════════════════
-function buildColPicker() {
-  const grid = document.getElementById('colGrid');
-  grid.innerHTML = '';
-  allCols.forEach(col => {
-    const sample = getSample(col);
-    const autoNote = /note|description|body|comment|remark|detail|internal|message/i.test(col);
-    const div = document.createElement('div');
-    div.className = 'col-item' + (autoNote ? ' selected' : '');
-    div.innerHTML =
-      '<input type="checkbox" id="cb_' + btoa(encodeURIComponent(col)).replace(/=/g,'') + '" ' + (autoNote?'checked':'') + ' />' +
-      '<div style="overflow:hidden;min-width:0">' +
-        '<div class="col-name" title="'+esc(col)+'">'+esc(col)+'</div>' +
-        '<div class="col-sample" title="'+esc(sample)+'">'+esc(sample||'(empty)')+'</div>' +
-      '</div>';
-    div.addEventListener('click', function(e) {
-      if (e.target.tagName==='INPUT') return;
-      const cb = this.querySelector('input');
-      cb.checked = !cb.checked;
-      this.classList.toggle('selected', cb.checked);
-    });
-    div.querySelector('input').addEventListener('change', function() {
-      div.classList.toggle('selected', this.checked);
-    });
-    grid.appendChild(div);
-  });
-  document.getElementById('colPicker').style.display = 'block';
+// ══════════════════════════════════════════
+// TEXT CLEANER — strips HTML from Odoo cells
+// ══════════════════════════════════════════
+function cleanText(raw) {
+  if(!raw) return '';
+  let t=String(raw);
+  // If it contains HTML tags — strip them using DOM
+  if(t.includes('<') && t.includes('>')) {
+    try {
+      const tmp=document.createElement('div');
+      tmp.innerHTML=t;
+      // Remove script/style
+      tmp.querySelectorAll('script,style').forEach(el=>el.remove());
+      // Extract text preserving line breaks from block elements
+      function extractText(node) {
+        let out='';
+        node.childNodes.forEach(n=>{
+          if(n.nodeType===3){out+=n.textContent;}
+          else if(n.nodeType===1){
+            const tag=n.tagName.toLowerCase();
+            if(tag==='br'){out+='\n';}
+            else{
+              const inner=extractText(n);
+              const isBlock=/^(div|p|li|tr|td|h[1-6]|blockquote|section|article)$/.test(tag);
+              out+=(isBlock&&inner)?inner+'\n':inner;
+            }
+          }
+        });
+        return out;
+      }
+      t=extractText(tmp);
+    } catch(e){
+      // Regex fallback
+      t=t.replace(/<br\s*\/?>/gi,'\n').replace(/<\/?(div|p|li)[^>]*>/gi,'\n').replace(/<[^>]+>/g,'');
+    }
+  }
+  // Decode entities
+  t=t.replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<')
+     .replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")
+     .replace(/&#x([0-9a-fA-F]+);/g,(_,h)=>String.fromCharCode(parseInt(h,16)))
+     .replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(+n))
+     .replace(/&[a-z]{2,8};/gi,' ');
+  // Normalize whitespace
+  t=t.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  t=t.replace(/[ \t]{2,}/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+  return t;
 }
 
+// Helper: get sample value for column picker
 function getSample(col) {
-  for (let i = 0; i < Math.min(rawRows.length, 8); i++) {
-    const v = cleanText(rawRows[i][col] || '');
-    if (v.length > 1) return v.substring(0, 55);
+  for(let i=0;i<Math.min(rawRows.length,10);i++){
+    const raw=rawRows[i][col]||'';
+    if(!raw) continue;
+    // Show cleaned preview in sample
+    const v=cleanText(raw);
+    if(v.length>1) return v.substring(0,55);
+    // If cleanText returned empty but raw has content, show raw truncated
+    if(raw.length>1) return raw.substring(0,55);
   }
   return '';
 }
 
-function getSelectedCols() {
-  return allCols.filter(col => {
-    const id = 'cb_' + btoa(encodeURIComponent(col)).replace(/=/g,'');
-    const el = document.getElementById(id);
-    return el && el.checked;
+// ══════════════════════════════════════════
+// COLUMN PICKER
+// ══════════════════════════════════════════
+function buildColPicker() {
+  const grid=document.getElementById('colGrid');
+  grid.innerHTML='';
+  allCols.forEach(col=>{
+    const sample=getSample(col);
+    const autoNote=/note|description|body|comment|remark|detail|internal|message/i.test(col);
+    const div=document.createElement('div');
+    div.className='col-item'+(autoNote?' selected':'');
+    const cbId='cb_'+col.replace(/[^a-zA-Z0-9]/g,'_');
+    div.innerHTML=
+      '<input type="checkbox" id="'+cbId+'" '+(autoNote?'checked':'')+'/>' +
+      '<div style="overflow:hidden;min-width:0">' +
+        '<div class="col-name" title="'+esc(col)+'">'+esc(col)+'</div>' +
+        '<div class="col-sample" title="'+esc(sample)+'">'+esc(sample||'(empty)')+'</div>' +
+      '</div>';
+    div.addEventListener('click',function(e){
+      if(e.target.tagName==='INPUT') return;
+      const cb=this.querySelector('input');
+      cb.checked=!cb.checked;
+      this.classList.toggle('selected',cb.checked);
+    });
+    div.querySelector('input').addEventListener('change',function(){
+      div.classList.toggle('selected',this.checked);
+    });
+    grid.appendChild(div);
   });
+  document.getElementById('colPicker').style.display='block';
 }
 
-function selectAll() {
-  document.querySelectorAll('.col-item').forEach(item => {
-    item.querySelector('input').checked = true;
-    item.classList.add('selected');
+function getSelectedCols(){
+  return allCols.filter(col=>{
+    const id='cb_'+col.replace(/[^a-zA-Z0-9]/g,'_');
+    const el=document.getElementById(id);
+    return el&&el.checked;
   });
 }
-function clearAll() {
-  document.querySelectorAll('.col-item').forEach(item => {
-    item.querySelector('input').checked = false;
-    item.classList.remove('selected');
-  });
-}
-function autoSelect() {
+function selectAll(){document.querySelectorAll('.col-item').forEach(item=>{item.querySelector('input').checked=true;item.classList.add('selected');});}
+function clearAll(){document.querySelectorAll('.col-item').forEach(item=>{item.querySelector('input').checked=false;item.classList.remove('selected');});}
+function autoSelect(){
   clearAll();
-  document.querySelectorAll('.col-item').forEach(item => {
-    const name = item.querySelector('.col-name').textContent;
-    if (/note|description|body|comment|remark|detail|internal|message/i.test(name)) {
-      item.querySelector('input').checked = true;
-      item.classList.add('selected');
+  document.querySelectorAll('.col-item').forEach(item=>{
+    const name=item.querySelector('.col-name').textContent;
+    if(/note|description|body|comment|remark|detail|internal|message/i.test(name)){
+      item.querySelector('input').checked=true;item.classList.add('selected');
     }
   });
 }
 
-// ══════════════════════════════════════════════════════
-//  TEXT CLEANER
-// ══════════════════════════════════════════════════════
-function cleanText(raw) {
-  if (!raw) return '';
-  let t = raw;
-  // Strip HTML tags
-  t = t.replace(/<style[\s\S]*?<\/style>/gi, '');
-  t = t.replace(/<script[\s\S]*?<\/script>/gi, '');
-  t = t.replace(/<[^>]+>/g, ' ');
-  // Decode HTML entities
-  t = t.replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<')
-       .replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")
-       .replace(/&#(\d+);/g, (_,n) => String.fromCharCode(n))
-       .replace(/&[a-z]+;/gi, ' ');
-  // Normalize whitespace
-  t = t.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-  t = t.replace(/[ \t]{2,}/g, ' ');
-  t = t.replace(/\n{3,}/g, '\n\n');
-  t = t.trim();
-  return t;
-}
-
-// Strip HTML
-function stripHtml(html) {
-  if (!html) return '';
-  const d = document.createElement('div');
-  d.innerHTML = html;
-  return (d.textContent||d.innerText||'').replace(/\s+/g,' ').trim();
-}
-
-// ══════════════════════════════════════════════════════
-//  PROCESS FILE
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════
+// PROCESS — ALL ROWS, SELECTED COLS ONLY
+// ══════════════════════════════════════════
 function processFile() {
-  selectedCols = getSelectedCols();
-  if (!selectedCols.length) {
-    showAlert('Please tick at least one column to clean!', 'error');
-    return;
-  }
-  cleanedRows = [];
-  document.getElementById('progress').style.display = 'block';
-  document.getElementById('processBtn').disabled = true;
-  document.getElementById('resultsSection').style.display = 'none';
-
-  let i = 0;
-  function next() {
-    if (i >= rawRows.length) {
-      setProg(100, 'Done!', 100);
-      setTimeout(() => document.getElementById('progress').style.display='none', 800);
-      document.getElementById('processBtn').disabled = false;
+  selectedCols=getSelectedCols();
+  if(!selectedCols.length){showAlert('Please tick at least one column to clean!','error');return;}
+  cleanedRows=[];
+  document.getElementById('progress').style.display='block';
+  document.getElementById('processBtn').disabled=true;
+  document.getElementById('resultsSection').style.display='none';
+  let i=0;
+  function next(){
+    if(i>=rawRows.length){
+      setProg(100,'Done!',100);
+      setTimeout(()=>document.getElementById('progress').style.display='none',800);
+      document.getElementById('processBtn').disabled=false;
       renderResults();
       return;
     }
-    // COPY ALL COLUMNS — only modify selected ones
-    const origRow = rawRows[i];
-    const newRow = {};
-    allCols.forEach(col => {
-      newRow[col] = selectedCols.includes(col)
-        ? cleanText(origRow[col] || '')   // ← clean this column
-        : (origRow[col] || '');           // ← keep exactly as-is
+    // Copy ALL columns — only clean selected ones
+    const orig=rawRows[i];
+    const newRow={};
+    allCols.forEach(col=>{
+      newRow[col]=selectedCols.includes(col)?cleanText(orig[col]||''):(orig[col]||'');
     });
     cleanedRows.push(newRow);
-    setProg(Math.round(((i+1)/rawRows.length)*100), 'Processing '+(i+1)+' of '+rawRows.length+'…', Math.round(((i+1)/rawRows.length)*100));
+    setProg(Math.round(((i+1)/rawRows.length)*100),'Processing '+(i+1)+' of '+rawRows.length+'…',Math.round(((i+1)/rawRows.length)*100));
     i++;
-    setTimeout(next, 0);
+    setTimeout(next,0);
   }
   next();
 }
 
-// ══════════════════════════════════════════════════════
-//  RENDER RESULTS TABLE
-// ══════════════════════════════════════════════════════
-function renderResults() {
-  document.getElementById('resultsSection').style.display = 'block';
-  document.getElementById('st1').textContent = cleanedRows.length;
-  document.getElementById('st2').textContent = selectedCols.length;
-  document.getElementById('st3').textContent = allCols.length - selectedCols.length;
-  document.getElementById('st4').textContent = allCols.length;
-  document.getElementById('recCount').textContent = cleanedRows.length + ' rows · ' + selectedCols.length + ' col(s) cleaned';
+// ══════════════════════════════════════════
+// RENDER RESULTS — all columns in original order
+// ══════════════════════════════════════════
+function renderResults(){
+  document.getElementById('resultsSection').style.display='block';
+  document.getElementById('st1').textContent=cleanedRows.length;
+  document.getElementById('st2').textContent=selectedCols.length;
+  document.getElementById('st3').textContent=allCols.length-selectedCols.length;
+  document.getElementById('st4').textContent=allCols.length;
+  document.getElementById('recCount').textContent=cleanedRows.length+' rows · '+selectedCols.length+' col(s) cleaned';
 
-  // Build thead — same column order as original
-  const thead = document.getElementById('theadRow');
-  thead.innerHTML = '<th style="width:40px;text-align:center">#</th>';
-  allCols.forEach(col => {
-    const isCleaned = selectedCols.includes(col);
-    thead.innerHTML += '<th class="'+(isCleaned?'cleaned':'')+'">' +
-      esc(col) + (isCleaned ? '<span class="badge-cleaned">cleaned</span>' : '') + '</th>';
+  // Build thead — exact original column order
+  const thead=document.getElementById('theadRow');
+  thead.innerHTML='<th style="width:40px;text-align:center">#</th>';
+  allCols.forEach(col=>{
+    const isC=selectedCols.includes(col);
+    thead.innerHTML+='<th class="'+(isC?'cleaned-h':'')+'" title="'+esc(col)+'">'+esc(col)+(isC?'<span class="badge-cleaned">✓</span>':'')+'</th>';
   });
 
-  // Build tbody
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-  const preview = Math.min(cleanedRows.length, 200); // show up to 200 rows in preview
-  for (let i = 0; i < preview; i++) {
-    const row = cleanedRows[i];
-    const tr = document.createElement('tr');
-    let html = '<td class="num">' + (i+1) + '</td>';
-    allCols.forEach(col => {
-      const isCleaned = selectedCols.includes(col);
-      const val = row[col] || '';
-      const display = val.length > 100 ? val.substring(0,97)+'…' : val;
-      html += '<td class="'+(isCleaned?'cleaned-cell':'')+'">' + esc(display) + '</td>';
+  // Build tbody — ALL rows, max 500 in preview
+  const tbody=document.getElementById('tableBody');
+  tbody.innerHTML='';
+  const preview=Math.min(cleanedRows.length,500);
+  for(let i=0;i<preview;i++){
+    const row=cleanedRows[i];
+    const tr=document.createElement('tr');
+    let html='<td class="num">'+(i+1)+'</td>';
+    allCols.forEach(col=>{
+      const isC=selectedCols.includes(col);
+      const val=row[col]||'';
+      const display=val.length>120?val.substring(0,117)+'…':val;
+      html+='<td class="'+(isC?'cleaned-cell':'')+'" title="'+esc(val)+'">'+esc(display)+'</td>';
     });
-    tr.innerHTML = html;
+    tr.innerHTML=html;
     tbody.appendChild(tr);
   }
-  if (cleanedRows.length > preview) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = '<td colspan="'+(allCols.length+1)+'" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px">… and '+(cleanedRows.length-preview)+' more rows (all included in download)</td>';
+  if(cleanedRows.length>preview){
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td colspan="'+(allCols.length+1)+'" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px">… and '+(cleanedRows.length-preview)+' more rows — all included in download</td>';
     tbody.appendChild(tr);
   }
   document.getElementById('resultsSection').scrollIntoView({behavior:'smooth'});
 }
 
-// ══════════════════════════════════════════════════════
-//  DOWNLOAD — same columns, same order, same format
-// ══════════════════════════════════════════════════════
-function doDownload(fmt) {
-  if (!cleanedRows.length) return;
-
-  if (fmt === 'xlsx') {
-    // Build XLSX from scratch (minimal, pure JS)
-    buildXLSX(cleanedRows, allCols, 'odoo_cleaned.xlsx');
-    return;
-  }
-
-  // CSV with UTF-8 BOM
-  const rows = [allCols.map(c => csvCell(c)).join(',')];
-  cleanedRows.forEach(row => {
-    rows.push(allCols.map(c => csvCell(row[c] !== undefined ? row[c] : '')).join(','));
-  });
-  const blob = new Blob(['\uFEFF' + rows.join('\r\n')], {type:'text/csv;charset=utf-8;'});
-  triggerDL(blob, 'odoo_cleaned.csv');
+// ══════════════════════════════════════════
+// DOWNLOAD — same columns, same order, ALL rows
+// ══════════════════════════════════════════
+function doDownload(fmt){
+  if(!cleanedRows.length) return;
+  if(fmt==='xlsx'){buildAndDownloadXLSX();return;}
+  // CSV with UTF-8 BOM (opens correctly in Excel)
+  const rows=[allCols.map(c=>csvCell(c)).join(',')];
+  cleanedRows.forEach(row=>{rows.push(allCols.map(c=>csvCell(row[c]||'')).join(','));});
+  const blob=new Blob(['\uFEFF'+rows.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  triggerDL(blob,'odoo_cleaned.csv');
 }
 
-function csvCell(v) {
-  const s = String(v||'').replace(/"/g,'""');
-  return (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) ? '"'+s+'"' : s;
+function csvCell(v){const s=String(v||'').replace(/"/g,'""');return(s.includes(',')||s.includes('"')||s.includes('\n')||s.includes('\r'))?'"'+s+'"':s;}
+
+// ══════════════════════════════════════════
+// XLSX BUILDER — pure JS, no library
+// ══════════════════════════════════════════
+function buildAndDownloadXLSX(){
+  function escX(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function colL(n){let s='';n++;while(n>0){s=String.fromCharCode(65+((n-1)%26))+s;n=Math.floor((n-1)/26);}return s;}
+  const strs=[],strMap={};
+  function si(s){const k=String(s||'');if(!(k in strMap)){strMap[k]=strs.length;strs.push(k);}return strMap[k];}
+  // Build sheet data
+  const sRows=[];
+  sRows.push(allCols.map((c,ci)=>({col:colL(ci),row:1,si:si(c)})));
+  cleanedRows.forEach((row,ri)=>{sRows.push(allCols.map((c,ci)=>({col:colL(ci),row:ri+2,si:si(row[c]||'')})));});
+  let shXml='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/sheet"><sheetData>';
+  sRows.forEach((cells,ri)=>{shXml+='<row r="'+(ri+1)+'">';cells.forEach(c=>{shXml+='<c r="'+c.col+c.row+'" t="s"><v>'+c.si+'</v></c>';});shXml+='</row>';});
+  shXml+='</sheetData></worksheet>';
+  let ssXml='<?xml version="1.0" encoding="UTF-8"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/sheet" count="'+strs.length+'" uniqueCount="'+strs.length+'">';
+  strs.forEach(s=>{ssXml+='<si><t xml:space="preserve">'+escX(s)+'</t></si>';});
+  ssXml+='</sst>';
+  const wbXml='<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/ml-main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  const wbRels='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>';
+  const appRels='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const cTypes='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/></Types>';
+  const zipFiles={'[Content_Types].xml':cTypes,'_rels/.rels':appRels,'xl/workbook.xml':wbXml,'xl/_rels/workbook.xml.rels':wbRels,'xl/worksheets/sheet1.xml':shXml,'xl/sharedStrings.xml':ssXml};
+  const blob=new Blob([buildZip(zipFiles)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  triggerDL(blob,'odoo_cleaned.xlsx');
 }
 
-// Minimal XLSX builder
-function buildXLSX(rows, cols, filename) {
-  function escXml(s) {
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-  function colLetter(n) {
-    let s=''; n++;
-    while(n>0){ s=String.fromCharCode(65+((n-1)%26))+s; n=Math.floor((n-1)/26); }
-    return s;
-  }
-
-  // Build shared strings
-  const strs = [], strMap = {};
-  function addStr(s) {
-    const k = String(s||'');
-    if (!(k in strMap)) { strMap[k]=strs.length; strs.push(k); }
-    return strMap[k];
-  }
-
-  // Build sheet rows
-  const sheetRows = [];
-  // Header
-  const hrow = cols.map((c,ci) => ({col:colLetter(ci),row:1,si:addStr(c)}));
-  sheetRows.push(hrow);
-  // Data
-  rows.forEach((row, ri) => {
-    const cells = cols.map((c,ci) => ({col:colLetter(ci),row:ri+2,si:addStr(row[c]||'')}));
-    sheetRows.push(cells);
+function buildZip(files){
+  const enc=new TextEncoder(),entries=[],cd=[];let offset=0;
+  Object.entries(files).forEach(([name,content])=>{
+    const nb=enc.encode(name),db=enc.encode(content),crc=crc32(db);
+    const lh=new Uint8Array(30+nb.length),dv=new DataView(lh.buffer);
+    dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0,true);
+    dv.setUint16(8,0,true);dv.setUint16(10,0,true);dv.setUint16(12,0,true);
+    dv.setUint32(14,crc,true);dv.setUint32(18,db.length,true);dv.setUint32(22,db.length,true);
+    dv.setUint16(26,nb.length,true);dv.setUint16(28,0,true);lh.set(nb,30);
+    const ce=new Uint8Array(46+nb.length),cv=new DataView(ce.buffer);
+    cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);
+    cv.setUint16(8,0,true);cv.setUint16(10,0,true);cv.setUint16(12,0,true);cv.setUint16(14,0,true);
+    cv.setUint32(16,crc,true);cv.setUint32(20,db.length,true);cv.setUint32(24,db.length,true);
+    cv.setUint16(28,nb.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);
+    cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,offset,true);
+    ce.set(nb,46);
+    entries.push(lh,db);cd.push(ce);offset+=lh.length+db.length;
   });
-
-  // Sheet XML
-  let sheetXml = '<?xml version="1.0" encoding="UTF-8"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/sheet"><sheetData>';
-  sheetRows.forEach((cells, ri) => {
-    sheetXml += '<row r="'+(ri+1)+'">';
-    cells.forEach(c => {
-      sheetXml += '<c r="'+c.col+c.row+'" t="s"><v>'+c.si+'</v></c>';
-    });
-    sheetXml += '</row>';
-  });
-  sheetXml += '</sheetData></worksheet>';
-
-  // Shared strings XML
-  let ssXml = '<?xml version="1.0" encoding="UTF-8"?>\n<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/sheet" count="'+strs.length+'" uniqueCount="'+strs.length+'">';
-  strs.forEach(s => { ssXml += '<si><t xml:space="preserve">'+escXml(s)+'</t></si>'; });
-  ssXml += '</sst>';
-
-  const wbXml = '<?xml version="1.0" encoding="UTF-8"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/ml-main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Cleaned Data" sheetId="1" r:id="rId1"/></sheets></workbook>';
-  const wbRels = '<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>';
-  const appRels = '<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
-  const cTypes = '<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/></Types>';
-
-  const zipFiles = {
-    '[Content_Types].xml': cTypes,
-    '_rels/.rels': appRels,
-    'xl/workbook.xml': wbXml,
-    'xl/_rels/workbook.xml.rels': wbRels,
-    'xl/worksheets/sheet1.xml': sheetXml,
-    'xl/sharedStrings.xml': ssXml
-  };
-
-  // Build ZIP
-  const zipBytes = buildZip(zipFiles);
-  const blob = new Blob([zipBytes], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  triggerDL(blob, filename);
-}
-
-// Minimal ZIP builder (stored, no compression)
-function buildZip(files) {
-  const enc = new TextEncoder();
-  const entries = [];
-  let offset = 0;
-  const centralDir = [];
-
-  Object.entries(files).forEach(([name, content]) => {
-    const nameBytes = enc.encode(name);
-    const dataBytes = enc.encode(content);
-    const crc = crc32(dataBytes);
-    const header = new Uint8Array(30 + nameBytes.length);
-    const dv = new DataView(header.buffer);
-    dv.setUint32(0, 0x04034b50, true); // local sig
-    dv.setUint16(4, 20, true); // version
-    dv.setUint16(6, 0, true);  // flags
-    dv.setUint16(8, 0, true);  // stored
-    dv.setUint16(10, 0, true); // time
-    dv.setUint16(12, 0, true); // date
-    dv.setUint32(14, crc, true);
-    dv.setUint32(18, dataBytes.length, true);
-    dv.setUint32(22, dataBytes.length, true);
-    dv.setUint16(26, nameBytes.length, true);
-    dv.setUint16(28, 0, true);
-    header.set(nameBytes, 30);
-
-    const cdEntry = new Uint8Array(46 + nameBytes.length);
-    const cdv = new DataView(cdEntry.buffer);
-    cdv.setUint32(0, 0x02014b50, true);
-    cdv.setUint16(4, 20, true); cdv.setUint16(6, 20, true);
-    cdv.setUint16(8, 0, true); cdv.setUint16(10, 0, true);
-    cdv.setUint16(12, 0, true); cdv.setUint16(14, 0, true);
-    cdv.setUint32(16, crc, true);
-    cdv.setUint32(20, dataBytes.length, true);
-    cdv.setUint32(24, dataBytes.length, true);
-    cdv.setUint16(28, nameBytes.length, true);
-    cdv.setUint16(30, 0, true); cdv.setUint16(32, 0, true);
-    cdv.setUint16(34, 0, true); cdv.setUint16(36, 0, true);
-    cdv.setUint32(38, 0, true); cdv.setUint32(42, offset, true);
-    cdEntry.set(nameBytes, 46);
-
-    entries.push(header, dataBytes);
-    centralDir.push(cdEntry);
-    offset += header.length + dataBytes.length;
-  });
-
-  const cdSize = centralDir.reduce((s,e) => s+e.length, 0);
-  const eocd = new Uint8Array(22);
-  const ev = new DataView(eocd.buffer);
-  ev.setUint32(0, 0x06054b50, true);
-  ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
-  ev.setUint16(8, centralDir.length, true);
-  ev.setUint16(10, centralDir.length, true);
-  ev.setUint32(12, cdSize, true);
-  ev.setUint32(16, offset, true);
-  ev.setUint16(20, 0, true);
-
-  const all = [...entries, ...centralDir, eocd];
-  const total = all.reduce((s,a) => s+a.length, 0);
-  const out = new Uint8Array(total);
-  let pos = 0;
-  all.forEach(a => { out.set(a, pos); pos += a.length; });
+  const cdSz=cd.reduce((s,e)=>s+e.length,0);
+  const eocd=new Uint8Array(22),ev=new DataView(eocd.buffer);
+  ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);
+  ev.setUint16(8,cd.length,true);ev.setUint16(10,cd.length,true);
+  ev.setUint32(12,cdSz,true);ev.setUint32(16,offset,true);ev.setUint16(20,0,true);
+  const all=[...entries,...cd,eocd],total=all.reduce((s,a)=>s+a.length,0);
+  const out=new Uint8Array(total);let pos=0;all.forEach(a=>{out.set(a,pos);pos+=a.length;});
   return out;
 }
 
-function crc32(data) {
-  let c = 0xFFFFFFFF;
-  for (let i = 0; i < data.length; i++) {
-    c ^= data[i];
-    for (let j = 0; j < 8; j++) c = (c&1) ? (0xEDB88320^(c>>>1)) : (c>>>1);
-  }
-  return (c^0xFFFFFFFF)>>>0;
-}
+function crc32(data){let c=0xFFFFFFFF;for(let i=0;i<data.length;i++){c^=data[i];for(let j=0;j<8;j++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);}return(c^0xFFFFFFFF)>>>0;}
 
-function triggerDL(blob, name) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-}
+function triggerDL(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
 
-function clearResults() {
-  cleanedRows=[]; rawRows=[]; allCols=[]; selectedCols=[];
+function clearResults(){
+  cleanedRows=[];rawRows=[];allCols=[];selectedCols=[];
   document.getElementById('resultsSection').style.display='none';
   document.getElementById('fileInfo').style.display='none';
   document.getElementById('colPicker').style.display='none';
@@ -955,24 +787,18 @@ function clearResults() {
   box.classList.remove('done');
 }
 
-function setProg(pct, text, num) {
-  document.getElementById('progBar').style.width=pct+'%';
-  document.getElementById('progText').textContent=text;
-  document.getElementById('progPct').textContent=(num||0)+'%';
+function showLoading(title,sub){
+  document.getElementById('loadingText').textContent=title;
+  document.getElementById('loadingSub').textContent=sub;
+  document.getElementById('loadingOverlay').style.display='flex';
 }
+function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
 
-function showAlert(msg, type) {
-  const el=document.getElementById('alertBox');
-  el.className='alert alert-'+type;
-  el.textContent=msg;
-  el.style.display='flex';
-  setTimeout(()=>el.style.display='none', 6000);
-}
+function setProg(pct,text,num){document.getElementById('progBar').style.width=pct+'%';document.getElementById('progText').textContent=text;document.getElementById('progPct').textContent=(num||0)+'%';}
 
-function esc(s) {
-  if(!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function showAlert(msg,type){const el=document.getElementById('alertBox');el.className='alert alert-'+type;el.textContent=msg;el.style.display='flex';setTimeout(()=>el.style.display='none',7000);}
+
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 </script>
 </body>
 </html>
