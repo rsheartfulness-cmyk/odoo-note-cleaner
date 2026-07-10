@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kasera Lead Report Cleaner</title>
+  <script src="./excel-lib.js"></script>
+  <style>
+    :root {
+      --brand: #1f4e78;
+      --teal: #0f766e;
+      --ink: #172033;
+      --muted: #5d6880;
+      --line: #d9e1ec;
+      --soft: #f5f8fc;
+      --good: #15803d;
+      --bad: #b91c1c;
+      --warn: #b45309;
+      --hot: #be123c;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #eef3f8; color: var(--ink); }
+    .shell { max-width: 1280px; margin: 0 auto; padding: 24px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    h1 { margin: 0; color: var(--brand); font-size: 28px; line-height: 1.2; }
+    .subhead { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+    .privacy { padding: 10px 12px; border: 1px solid var(--line); background: #f8fbff; border-radius: 8px; color: var(--muted); font-size: 13px; text-align: right; }
+    main { display: grid; grid-template-columns: minmax(320px, 410px) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel { background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 14px 38px rgba(31, 78, 120, 0.08); overflow: hidden; }
+    .upload-panel { padding: 18px; }
+    .dropzone { display: grid; place-items: center; min-height: 220px; border: 2px dashed #91a9bf; border-radius: 8px; background: var(--soft); text-align: center; cursor: pointer; }
+    .dropzone:hover, .dropzone.is-dragging { border-color: var(--brand); background: #edf6ff; }
+    .dropzone input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .upload-icon { width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--brand); font-size: 24px; font-weight: 700; }
+    .drop-title { display: block; font-size: 18px; font-weight: 700; }
+    .drop-note { display: block; margin-top: 8px; color: var(--muted); font-size: 13px; }
+    .actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    button { border: 0; border-radius: 7px; min-height: 42px; padding: 0 16px; font: inherit; font-weight: 700; cursor: pointer; color: #fff; background: var(--brand); }
+    button.secondary { color: var(--brand); background: #e7f0f8; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { margin-top: 14px; padding: 12px; border-radius: 8px; background: #f8fafc; border: 1px solid var(--line); color: var(--muted); font-size: 14px; line-height: 1.45; min-height: 48px; }
+    .status.good { background: #f0fdf4; border-color: #bbf7d0; color: var(--good); }
+    .status.bad { background: #fef2f2; border-color: #fecaca; color: var(--bad); }
+    .status.warn { background: #fffbeb; border-color: #fde68a; color: var(--warn); }
+    .hint-list { margin: 16px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .mapping { margin-top: 14px; padding: 12px; border: 1px solid #f0c36d; background: #fffbeb; border-radius: 8px; }
+    .mapping h2 { margin: 0 0 8px; font-size: 15px; color: var(--warn); }
+    .mapping-grid { display: grid; gap: 8px; }
+    .field-row { display: grid; grid-template-columns: 120px 1fr; gap: 8px; align-items: center; font-size: 13px; }
+    .field-row select, .controls input, .controls select, .controls button, .small-input { width: 100%; min-height: 36px; border: 1px solid var(--line); border-radius: 7px; padding: 0 10px; background: #fff; color: var(--ink); font: inherit; }
+    .summary { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; padding: 14px; }
+    .metric { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #fbfdff; }
+    .metric strong { display: block; font-size: 22px; line-height: 1.1; color: var(--brand); }
+    .metric span { display: block; margin-top: 5px; font-size: 12px; color: var(--muted); }
+    .metric.warn strong { color: var(--warn); }
+    .metric.hot strong { color: var(--hot); }
+    .metric.good strong { color: var(--good); }
+    .controls { display: grid; grid-template-columns: minmax(180px, 1.5fr) repeat(4, minmax(130px, 1fr)); gap: 10px; padding: 0 14px 14px; border-bottom: 1px solid var(--line); }
+    .preview-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .preview-head h2 { margin: 0; font-size: 16px; color: var(--brand); }
+    .table-wrap { overflow: auto; max-height: 560px; }
+    table { border-collapse: collapse; width: 100%; min-width: 1120px; font-size: 13px; }
+    th { position: sticky; top: 0; z-index: 1; background: var(--brand); color: #fff; text-align: left; padding: 10px; white-space: nowrap; }
+    td { border-bottom: 1px solid #e8edf3; padding: 9px 10px; vertical-align: top; color: #263247; }
+    tr:nth-child(even) td { background: #f8fbff; }
+    .history-cell { max-width: 420px; white-space: pre-wrap; line-height: 1.35; }
+    .empty { padding: 36px 18px; text-align: center; color: var(--muted); }
+    .badge { display: inline-block; padding: 3px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #eef2ff; color: var(--brand); }
+    .badge.stale { background: #fffbeb; color: var(--warn); }
+    .badge.hot { background: #fff1f2; color: var(--hot); }
+    .badge.duplicate { background: #f1f5f9; color: #475569; }
+    .insights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 0 14px 14px; }
+    .insight { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #fff; min-height: 90px; }
+    .insight h3 { margin: 0 0 8px; font-size: 13px; color: var(--brand); }
+    .insight ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    @media (max-width: 980px) {
+      .shell { padding: 16px; }
+      header { display: block; }
+      .privacy { text-align: left; margin-top: 12px; }
+      main { grid-template-columns: 1fr; }
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .insights { grid-template-columns: 1fr; }
+      h1 { font-size: 23px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>Kasera Lead Report Cleaner</h1>
+        <p class="subhead">Upload Odoo CRM lead export, review insights, and download a clean Excel report.</p>
+      </div>
+      <div class="privacy">Browser-only processing. No lead data is uploaded.</div>
+    </header>
+
+    <main>
+      <section class="panel upload-panel">
+        <label class="dropzone" id="dropzone">
+          <input id="fileInput" type="file" accept=".xlsx,.xls">
+          <span>
+            <span class="upload-icon">+</span>
+            <span class="drop-title">Choose or drop Excel file</span>
+            <span class="drop-note">Raw Odoo lead export works automatically</span>
+          </span>
+        </label>
+
+        <div class="actions">
+          <button id="downloadBtn" disabled>Download Report</button>
+          <button id="whatsappBtn" class="secondary" disabled>Copy Summary</button>
+          <button id="resetBtn" class="secondary" disabled>Clear</button>
+        </div>
+
+        <div id="status" class="status">Ready. Select the raw Odoo lead export to begin.</div>
+
+        <div id="mappingPanel" class="mapping" hidden>
+          <h2>Column mapping needed</h2>
+          <div class="mapping-grid" id="mappingGrid"></div>
+          <div class="actions">
+            <button id="applyMappingBtn">Use These Columns</button>
+          </div>
+        </div>
+
+        <ul class="hint-list">
+          <li>Different exports can be handled with column mapping.</li>
+          <li>Downloaded workbook includes Lead Report and Summary sheets.</li>
+          <li>Stale, hot, and duplicate leads are flagged automatically.</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <div class="summary" id="summary">
+          <div class="metric"><strong>0</strong><span>Total Leads</span></div>
+          <div class="metric"><strong>0</strong><span>Total Messages</span></div>
+          <div class="metric"><strong>-</strong><span>First Activity</span></div>
+          <div class="metric"><strong>-</strong><span>Last Activity</span></div>
+          <div class="metric warn"><strong>0</strong><span>Stale Leads</span></div>
+          <div class="metric hot"><strong>0</strong><span>Hot Leads</span></div>
+          <div class="metric"><strong>0</strong><span>Duplicates</span></div>
+          <div class="metric good"><strong>0</strong><span>Active 7 Days</span></div>
+        </div>
+
+        <div class="controls">
+          <input id="searchInput" type="search" placeholder="Search lead, contact, city, tag">
+          <select id="stageFilter"><option value="">All stages</option></select>
+          <select id="salespersonFilter"><option value="">All salespeople</option></select>
+          <select id="flagFilter">
+            <option value="">All flags</option>
+            <option value="stale">Stale</option>
+            <option value="hot">Hot</option>
+            <option value="duplicate">Duplicate</option>
+            <option value="active7">Active 7 days</option>
+          </select>
+          <input id="staleDaysInput" class="small-input" type="number" min="1" max="365" value="15" title="Stale days">
+        </div>
+
+        <div class="insights" id="insights">
+          <div class="insight"><h3>Top Stages</h3><ol><li>No data yet</li></ol></div>
+          <div class="insight"><h3>Top Salespeople</h3><ol><li>No data yet</li></ol></div>
+          <div class="insight"><h3>Top Tags</h3><ol><li>No data yet</li></ol></div>
+        </div>
+
+        <div class="preview-head">
+          <h2>Preview</h2>
+          <span id="fileName" class="drop-note">No file selected</span>
+        </div>
+        <div class="table-wrap">
+          <div id="emptyPreview" class="empty">Cleaned leads will appear here before download.</div>
+          <table id="previewTable" hidden>
+            <thead>
+              <tr>
+                <th>Flag</th>
+                <th>Opportunity</th>
+                <th>Contact</th>
+                <th>City</th>
+                <th>Salesperson</th>
+                <th>Stage</th>
+                <th>Last Activity</th>
+                <th>Messages</th>
+                <th>Follow-up History</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>
